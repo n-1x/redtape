@@ -7,9 +7,10 @@ port = 80
 downloadDir = "."
 uploadDir = "."
 quietMode = false
+logAgent = false
 
 OptionParser.parse do |parser|
-  parser.banner = "Redtape | Pentesting web server"
+  parser.banner = "Redtape | Penetration tester's web server"
 
   parser.on "-l HOST", "--listen HOST", "Host to listen on" do |val|
     ip = val
@@ -25,6 +26,10 @@ OptionParser.parse do |parser|
 
   parser.on "-u UPLOAD_DIR", "--upload_dir UPLOAD_DIR", "Directory to store uploaded files, defaults to working directory" do |dir|
     uploadDir = dir
+  end
+
+  parser.on "-a", "--log-ua", "Log the user agent of each request" do
+    logAgent = true
   end
 
   parser.on "-q", "--quiet", "Don't output all requests to stdout" do
@@ -155,10 +160,12 @@ end
 
 server = HTTP::Server.new do |context|
   command = context.request.path.split("/")[1]
-  puts context.request
 
   unless quietMode
     puts "#{context.request.remote_address} - #{context.request.method} #{context.request.path}"
+    if logAgent
+      puts "\t#{context.request.headers["User-Agent"]}"
+    end
   end
 
   case command
